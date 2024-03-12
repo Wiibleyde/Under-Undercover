@@ -1,0 +1,18 @@
+# Server configurations
+server:
+  host: "localhost"
+  port: 8080
+  endpoint: "ws"
+
+# Seq credentials
+seq:
+  url: "http://localhost:5341"
+  apikey: "DEADBEEFrcQ0tbaiKCUD"
+
+game:
+  nbUndercover: 1
+  nbWhite: 1
+  nbTurn: 1
+
+debug:
+  gameUuid: "7afab876-dead-49a7-beef-fdbc1c727b59"

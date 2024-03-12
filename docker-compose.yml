@@ -1,0 +1,34 @@
+version: "3"
+services:
+  seqcli:
+    image: datalust/seqcli:latest
+    command: apikey create -t Undercover --token DEADBEEFrcQ0tbaiKCUD -s http://seq
+    depends_on:
+      - seq
+    restart: on-failure
+    networks:
+      - seqnetwork
+  seq:
+    image: datalust/seq:latest
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "8003:80"
+      - "5341:5341"
+    networks:
+      - seqnetwork
+  undercover:
+    image: undercover-server:latest
+    depends_on:
+      - seq
+      - seqcli
+    environment:
+      - SEQ_URL=http://seq:5341
+      - SEQ_APIKEY=DEADBEEFrcQ0tbaiKCUD
+    ports:
+      - "8080:8080/udp"
+      - "8080:8080/tcp"
+    networks:
+      - seqnetwork
+networks:
+  seqnetwork:
