@@ -66,6 +66,7 @@ var (
 	GameAlreadyStarted = GameError{Code: 5, Message: "La partie a déjà commencé"}
 	GameNotFound       = GameError{Code: 6, Message: "La partie n'a pas été trouvée"}
 	PlayerNotFound     = GameError{Code: 7, Message: "Le joueur n'a pas été trouvé"}
+	PlayerEliminated   = GameError{Code: 8, Message: "Le joueur a été éliminé"}
 	NotYourTurn        = GameError{Code: 8, Message: "Ce n'est pas votre tour"}
 	WrongAction        = GameError{Code: 9, Message: "Action incorrecte"}
 	NotHost            = GameError{Code: 10, Message: "Vous n'êtes pas l'hôte de la partie"}
