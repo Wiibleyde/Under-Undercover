@@ -10,7 +10,7 @@ var Games []Game
 
 func (g *Game) AddPlayer(p Player) error {
 	if g.Started {
-		return errors.New("Game already started")
+		return errors.New(GameAlreadyStarted.Message)
 	}
 	g.Players = append(g.Players, p)
 	return nil
@@ -33,9 +33,33 @@ func (g *Game) CreateGame() {
 	}
 }
 
-func (g *Game) StartGame() {
+func (g *Game) StartGame() error {
+	if g.Started {
+		return errors.New(GameAlreadyStarted.Message)
+	}
+	if len(g.Players) < 3 {
+		return errors.New(NotEnoughPlayers.Message)
+	}
+	if g.Data.NormalWord == "" || g.Data.UndercoverWord == "" {
+		return errors.New(WordsNotSet.Message)
+	}
+	for i, player := range g.Players {
+		if player.Role == NotSet {
+			return errors.New(RolesNotSet.Message)
+		}
+		if player.Position == -1 {
+			return errors.New(PositionsNotSet.Message)
+		}
+		g.Players[i] = player
+	}
+
 	g.Started = true
 	g.GameState.DescriptionPhase = true
+	g.GameState.DiscussionPhase = false
+	g.GameState.EliminationPhase = false
+	g.PlayerTurn = 0
+
+	return nil
 }
 
 func (g *Game) GetPlayer(uuid string) (Player, error) {
@@ -44,7 +68,7 @@ func (g *Game) GetPlayer(uuid string) (Player, error) {
 			return p, nil
 		}
 	}
-	return Player{}, errors.New("Player not found")
+	return Player{}, errors.New(PlayerNotFound.Message)
 }
 
 func (g *Game) GetPlayers() []Player {
@@ -87,12 +111,13 @@ func (g *Game) RemovePlayer(uuid string) {
 	}
 }
 
-func (g *Game) SetPlayerByRole(role Role, p Player) {
-	for i, player := range g.Players {
-		if player.Role == role {
-			g.Players[i] = p
+func (g *Game) GetPlayerByRole(role Role) (Player, error) {
+	for _, p := range g.Players {
+		if p.Role == role {
+			return p, nil
 		}
 	}
+	return Player{}, errors.New(PlayerNotFound.Message)
 }
 
 func (g *Game) GetNormalPlayers() []Player {
@@ -103,6 +128,14 @@ func (g *Game) GetNormalPlayers() []Player {
 		}
 	}
 	return normalPlayers
+}
+
+func (g *Game) SetPlayerByRole(role Role, p Player) {
+	for i, player := range g.Players {
+		if player.Role == role {
+			g.Players[i] = p
+		}
+	}
 }
 
 func (g *Game) SetNormalPlayers(players []Player) {
@@ -129,11 +162,15 @@ func (g *Game) SetUndercoverWord(word string) {
 	g.Data.UndercoverWord = word
 }
 
+func (g *Game) GetNextPlayer() (Player, error) {
+	return g.Players[g.PlayerTurn], nil
+}
+
 func GetGame(uuid string) (Game, error) {
 	for _, g := range Games {
 		if g.Uuid == uuid {
 			return g, nil
 		}
 	}
-	return Game{}, errors.New("Game not found")
+	return Game{}, errors.New(GameNotFound.Message)
 }
