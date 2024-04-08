@@ -72,6 +72,7 @@ var (
 	NotHost            = GameError{Code: 10, Message: "Vous n'êtes pas l'hôte de la partie"}
 	MrWhiteWinError    = GameError{Code: 11, Message: "Mr White a gagné mais le joueur est introuvable"}
 	UndercoverWinError = GameError{Code: 12, Message: "Les Undercovers ont gagné mais le joueur est introuvable"}
+	NoWinnersError     = GameError{Code: 13, Message: "Aucun gagnant trouvé"}
 )
 
 type WinMessage struct {

@@ -166,6 +166,16 @@ func (g *Game) GetNextPlayer() (Player, error) {
 	return g.Players[g.PlayerTurn], nil
 }
 
+func (g *Game) GetAlivePlayers() []Player {
+	var alivePlayers []Player
+	for _, p := range g.Players {
+		if !p.Eliminated {
+			alivePlayers = append(alivePlayers, p)
+		}
+	}
+	return alivePlayers
+}
+
 func GetGame(uuid string) (Game, error) {
 	for _, g := range Games {
 		if g.Uuid == uuid {

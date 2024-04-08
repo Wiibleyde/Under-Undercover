@@ -63,13 +63,40 @@ func (g *Game) PlayTurnDesc(player Player, wordGiven string) error {
 	if g.PlayerTurn != player.Position {
 		return errors.New(NotYourTurn.Message)
 	}
+	if g.Players[g.PlayerTurn].Eliminated { // NEED REWORK BECAUSE INDEX OUT OF RANGE
+		g.PlayerTurn++
+		for {
+			if g.PlayerTurn == len(g.Players) {
+				break
+			}
+			if g.Players[g.PlayerTurn].Eliminated {
+				g.PlayerTurn++
+			} else {
+				break
+			}
+		}
+		return errors.New(NotYourTurn.Message)
+	}
+	if player.Eliminated {
+		return errors.New(PlayerEliminated.Message)
+	}
 	g.PlaysDesc = append(g.PlaysDesc, PlaysDescData{
 		Turn:      g.PlayerTurn,
 		Player:    player,
 		WordGiven: wordGiven,
 	})
-	g.PlayerTurn++
-	if g.PlayerTurn == len(g.Players) {
+	g.PlayerTurn++ // NEED REWORK BECAUSE INDEX OUT OF RANGE
+	for {
+		if g.PlayerTurn == len(g.Players) {
+			break
+		}
+		if g.Players[g.PlayerTurn].Eliminated {
+			g.PlayerTurn++
+		} else {
+			break
+		}
+	}
+	if g.PlayerTurn == len(g.GetAlivePlayers()) {
 		g.PlayerTurn = 0
 		g.GameState.DescriptionPhase = false
 		g.GameState.DiscussionPhase = true
@@ -86,6 +113,7 @@ func (g *Game) PlayTurnDiscuss(player Player) error {
 	if g.Host.Uuid != player.Uuid {
 		return errors.New(NotHost.Message)
 	}
+	g.PlayerTurn = 0
 	g.GameState.DescriptionPhase = false
 	g.GameState.DiscussionPhase = false
 	g.GameState.EliminationPhase = true
@@ -100,13 +128,26 @@ func (g *Game) PlayTurnElim(player Player, votedPlayer Player) error {
 	if g.PlayerTurn != player.Position {
 		return errors.New(NotYourTurn.Message)
 	}
+	if g.Players[g.PlayerTurn].Eliminated { // NEED REWORK BECAUSE INDEX OUT OF RANGE
+		g.PlayerTurn++
+		for {
+			if g.PlayerTurn == len(g.Players)-1 {
+				break
+			}
+			if g.Players[g.PlayerTurn].Eliminated {
+				g.PlayerTurn++
+			} else {
+				break
+			}
+		}
+		return errors.New(NotYourTurn.Message)
+	}
 	g.PlaysVote = append(g.PlaysVote, PlaysVoteData{
 		Turn:   g.PlayerTurn,
 		Player: player,
 		Vote:   votedPlayer,
 	})
-	g.PlayerTurn++
-	if g.PlayerTurn == len(g.Players) {
+	if g.PlayerTurn == len(g.GetAlivePlayers())-1 {
 		var votes = make(map[string]int)
 		for _, vote := range g.PlaysVote {
 			votes[vote.Vote.Uuid]++
@@ -134,6 +175,18 @@ func (g *Game) PlayTurnElim(player Player, votedPlayer Player) error {
 		g.GameState.DescriptionPhase = true
 		g.GameState.DiscussionPhase = false
 		g.GameState.EliminationPhase = false
+	} else { // NEED REWORK BECAUSE INDEX OUT OF RANGE
+		g.PlayerTurn++
+		for {
+			if g.PlayerTurn == len(g.Players)-1 {
+				break
+			}
+			if g.Players[g.PlayerTurn].Eliminated {
+				g.PlayerTurn++
+			} else {
+				break
+			}
+		}
 	}
 
 	return nil
@@ -155,6 +208,9 @@ func (g *Game) IsGameFinished() (WinMessage, error) {
 		case Normal:
 			normalAlive++
 		}
+	}
+	if undercoverAlive == 0 && !mrWhiteAlive && normalAlive == 0 {
+		return WinMessage{WinRole: NotSet, Winners: []Player{}}, errors.New(NoWinnersError.Message)
 	}
 	if mrWhiteAlive && normalAlive <= 1 && undercoverAlive == 0 {
 		mrWhitePlayer, err := g.GetPlayerByRole(MrWhite)
