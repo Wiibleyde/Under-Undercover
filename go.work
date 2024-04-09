@@ -3,6 +3,7 @@ go 1.21.9
 use (
 	.
 	./pkg/api
+	./pkg/config
 	./pkg/game
 	./pkg/words
 )

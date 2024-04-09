@@ -1,6 +1,9 @@
 package api
 
 import (
+	"config"
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,7 +17,10 @@ func InitApi() {
 		return c.SendString("Hello, World!")
 	})
 
-	err := app.Listen("0.0.0.0:3000")
+	host := config.GetConfig().Webserver.Host
+	port := strconv.Itoa(config.GetConfig().Webserver.Port)
+
+	err := app.Listen(host + ":" + port)
 	if err != nil {
 		panic(err)
 	}

@@ -2,10 +2,14 @@ package main
 
 import (
 	"api"
+	"config"
 	"words"
 )
 
 func main() {
+	if config.InitConfig() {
+		return
+	}
 	words.InitWords()
 	api.InitApi()
 }
