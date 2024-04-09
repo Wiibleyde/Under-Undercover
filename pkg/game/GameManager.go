@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"words"
 )
@@ -45,39 +46,17 @@ func (g *Game) AttributeRoles() {
 }
 
 func (g *Game) ChoosePlayerOrder() {
-	for i := range g.Players {
-		g.Players[i].Position = i
-	}
 	rand.Shuffle(len(g.Players), func(i, j int) {
 		g.Players[i], g.Players[j] = g.Players[j], g.Players[i]
 	})
-	for i := range g.Players {
-		g.Players[i].Position = i
-	}
 }
 
 func (g *Game) PlayTurnDesc(player Player, wordGiven string) error {
 	if !g.GameState.DescriptionPhase {
 		return errors.New(WrongAction.Message)
 	}
-	if g.PlayerTurn != player.Position {
-		return errors.New(NotYourTurn.Message)
-	}
-	if g.Players[g.PlayerTurn].Eliminated { // NEED REWORK BECAUSE INDEX OUT OF RANGE
-		g.PlayerTurn++
-		for {
-			if g.PlayerTurn == len(g.Players) {
-				break
-			}
-			if g.Players[g.PlayerTurn].Eliminated {
-				g.PlayerTurn++
-			} else {
-				break
-			}
-		}
-		return errors.New(NotYourTurn.Message)
-	}
 	if player.Eliminated {
+		g.SetNextPlayerTurn()
 		return errors.New(PlayerEliminated.Message)
 	}
 	g.PlaysDesc = append(g.PlaysDesc, PlaysDescData{
@@ -85,22 +64,13 @@ func (g *Game) PlayTurnDesc(player Player, wordGiven string) error {
 		Player:    player,
 		WordGiven: wordGiven,
 	})
-	g.PlayerTurn++ // NEED REWORK BECAUSE INDEX OUT OF RANGE
-	for {
-		if g.PlayerTurn == len(g.Players) {
-			break
-		}
-		if g.Players[g.PlayerTurn].Eliminated {
-			g.PlayerTurn++
-		} else {
-			break
-		}
-	}
-	if g.PlayerTurn == len(g.GetAlivePlayers()) {
+	g.SetNextPlayerTurn()
+	if len(g.PlaysDesc) == len(g.GetAlivePlayers()) {
 		g.PlayerTurn = 0
 		g.GameState.DescriptionPhase = false
 		g.GameState.DiscussionPhase = true
 		g.GameState.EliminationPhase = false
+		g.PlaysDesc = []PlaysDescData{}
 	}
 
 	return nil
@@ -125,21 +95,8 @@ func (g *Game) PlayTurnElim(player Player, votedPlayer Player) error {
 	if !g.GameState.EliminationPhase {
 		return errors.New(WrongAction.Message)
 	}
-	if g.PlayerTurn != player.Position {
-		return errors.New(NotYourTurn.Message)
-	}
-	if g.Players[g.PlayerTurn].Eliminated { // NEED REWORK BECAUSE INDEX OUT OF RANGE
-		g.PlayerTurn++
-		for {
-			if g.PlayerTurn == len(g.Players)-1 {
-				break
-			}
-			if g.Players[g.PlayerTurn].Eliminated {
-				g.PlayerTurn++
-			} else {
-				break
-			}
-		}
+	if player.Eliminated {
+		g.SetNextPlayerTurn()
 		return errors.New(NotYourTurn.Message)
 	}
 	g.PlaysVote = append(g.PlaysVote, PlaysVoteData{
@@ -147,7 +104,8 @@ func (g *Game) PlayTurnElim(player Player, votedPlayer Player) error {
 		Player: player,
 		Vote:   votedPlayer,
 	})
-	if g.PlayerTurn == len(g.GetAlivePlayers())-1 {
+	g.SetNextPlayerTurn()
+	if len(g.PlaysVote) == len(g.GetAlivePlayers()) {
 		var votes = make(map[string]int)
 		for _, vote := range g.PlaysVote {
 			votes[vote.Vote.Uuid]++
@@ -175,18 +133,7 @@ func (g *Game) PlayTurnElim(player Player, votedPlayer Player) error {
 		g.GameState.DescriptionPhase = true
 		g.GameState.DiscussionPhase = false
 		g.GameState.EliminationPhase = false
-	} else { // NEED REWORK BECAUSE INDEX OUT OF RANGE
-		g.PlayerTurn++
-		for {
-			if g.PlayerTurn == len(g.Players)-1 {
-				break
-			}
-			if g.Players[g.PlayerTurn].Eliminated {
-				g.PlayerTurn++
-			} else {
-				break
-			}
-		}
+		g.PlaysVote = []PlaysVoteData{}
 	}
 
 	return nil
@@ -209,6 +156,7 @@ func (g *Game) IsGameFinished() (WinMessage, error) {
 			normalAlive++
 		}
 	}
+	fmt.Println("Undercover alive: ", undercoverAlive, "Normal alive: ", normalAlive, "MrWhite alive: ", mrWhiteAlive)
 	if undercoverAlive == 0 && !mrWhiteAlive && normalAlive == 0 {
 		return WinMessage{WinRole: NotSet, Winners: []Player{}}, errors.New(NoWinnersError.Message)
 	}

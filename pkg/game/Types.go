@@ -25,7 +25,7 @@ type Game struct {
 type Player struct {
 	Uuid       string `json:"uuid"`
 	Pseudo     string `json:"pseudo"`
-	Position   int    `json:"position"`
+	// Position   int    `json:"position"`
 	Role       Role   `json:"role"`
 	Eliminated bool   `json:"eliminated"`
 }
@@ -73,6 +73,7 @@ var (
 	MrWhiteWinError    = GameError{Code: 11, Message: "Mr White a gagné mais le joueur est introuvable"}
 	UndercoverWinError = GameError{Code: 12, Message: "Les Undercovers ont gagné mais le joueur est introuvable"}
 	NoWinnersError     = GameError{Code: 13, Message: "Aucun gagnant trouvé"}
+	NoNextPlayer       = GameError{Code: 14, Message: "Aucun joueur suivant trouvé"}
 )
 
 type WinMessage struct {

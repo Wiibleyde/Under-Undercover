@@ -47,9 +47,9 @@ func (g *Game) StartGame() error {
 		if player.Role == NotSet {
 			return errors.New(RolesNotSet.Message)
 		}
-		if player.Position == -1 {
-			return errors.New(PositionsNotSet.Message)
-		}
+		// if player.Position == -1 {
+		// 	return errors.New(PositionsNotSet.Message)
+		// }
 		g.Players[i] = player
 	}
 
@@ -162,8 +162,47 @@ func (g *Game) SetUndercoverWord(word string) {
 	g.Data.UndercoverWord = word
 }
 
+func (g *Game) NextGameState() {
+	if g.GameState.DescriptionPhase {
+		g.GameState.DescriptionPhase = false
+		g.GameState.DiscussionPhase = true
+	} else if g.GameState.DiscussionPhase {
+		g.GameState.DiscussionPhase = false
+		g.GameState.EliminationPhase = true
+	} else if g.GameState.EliminationPhase {
+		g.GameState.EliminationPhase = false
+		g.GameState.DescriptionPhase = true
+	}
+}
+
+func (g *Game) SetNextPlayerTurn() {
+	var validPlayer bool
+	for !validPlayer {
+		if g.PlayerTurn == len(g.GetAlivePlayers()) {
+			g.NextGameState()
+			g.PlayerTurn = 0
+		}
+		if !g.Players[g.PlayerTurn].Eliminated {
+			validPlayer = true
+		}
+		g.PlayerTurn++
+	}
+}
+
 func (g *Game) GetNextPlayer() (Player, error) {
-	return g.Players[g.PlayerTurn], nil
+	for i := g.PlayerTurn + 1; i < len(g.Players); i++ {
+		if !g.Players[i].Eliminated {
+			g.PlayerTurn = i
+			return g.Players[i], nil
+		}
+	}
+	for i := 0; i < g.PlayerTurn; i++ {
+		if !g.Players[i].Eliminated {
+			g.PlayerTurn = i
+			return g.Players[i], nil
+		}
+	}
+	return Player{}, errors.New(NoNextPlayer.Message)
 }
 
 func (g *Game) GetAlivePlayers() []Player {

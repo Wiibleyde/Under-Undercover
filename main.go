@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"game"
 	"math/rand"
+	"time"
 	"words"
 )
 
@@ -11,28 +12,28 @@ func main() {
 	words.InitWords()
 
 	player1 := game.Player{
-		Uuid:     "1",
-		Pseudo:   "player1",
-		Position: -1,
-		Role:     game.NotSet,
+		Uuid:   "1",
+		Pseudo: "player1",
+		// Position: -1,
+		Role: game.NotSet,
 	}
 	player2 := game.Player{
-		Uuid:     "2",
-		Pseudo:   "player2",
-		Position: -1,
-		Role:     game.NotSet,
+		Uuid:   "2",
+		Pseudo: "player2",
+		// Position: -1,
+		Role: game.NotSet,
 	}
 	player3 := game.Player{
-		Uuid:     "3",
-		Pseudo:   "player3",
-		Position: -1,
-		Role:     game.NotSet,
+		Uuid:   "3",
+		Pseudo: "player3",
+		// Position: -1,
+		Role: game.NotSet,
 	}
 	player4 := game.Player{
-		Uuid:     "4",
-		Pseudo:   "player4",
-		Position: -1,
-		Role:     game.NotSet,
+		Uuid:   "4",
+		Pseudo: "player4",
+		// Position: -1,
+		Role: game.NotSet,
 	}
 
 	game1 := game.Game{}
@@ -48,12 +49,17 @@ func main() {
 
 	game1.StartGame()
 
+	var turn int
+
 	for {
-		for a := range game1.Players {
+		for game1.GameState.DescriptionPhase {
 			playerTurn, _ := game1.GetNextPlayer()
 			err2 := game1.PlayTurnDesc(playerTurn, "word2")
 			if err2 != nil {
-				fmt.Println(game1.Players[a].Pseudo, " : ", err2.Error(), " ", fmt.Sprint(game1.GameState))
+				// _ = a
+				fmt.Println(err2.Error(), " ", fmt.Sprint(game1.GameState))
+			} else {
+				fmt.Println("Player", playerTurn.Pseudo, "gave a word", game1.PlayerTurn)
 			}
 		}
 
@@ -62,18 +68,18 @@ func main() {
 			if err2.Error() == game.NotHost.Message {
 				return
 			}
-			fmt.Println(err2, " ", fmt.Sprint(game1.GameState))
+			fmt.Println("HOST", err2, " ", fmt.Sprint(game1.GameState))
 		}
 
-		fmt.Println("Discussion phase over")
-		fmt.Println("Elimination phase", game1.PlayerTurn)
-
-		for a := range game1.Players {
+		randomVote := rand.Intn(len(game1.Players))
+		for game1.GameState.EliminationPhase {
 			playerTurn, _ := game1.GetNextPlayer()
-			randomVote := rand.Intn(len(game1.Players) - 1)
 			err2 := game1.PlayTurnElim(playerTurn, game1.Players[randomVote])
 			if err2 != nil {
-				fmt.Println(game1.Players[a].Pseudo, " : ", err2.Error(), " ", fmt.Sprint(game1.GameState))
+				// _ = a
+				fmt.Println(err2.Error(), " ", fmt.Sprint(game1.GameState))
+			} else {
+				fmt.Println("Player", playerTurn, "voted for", game1.Players[randomVote])
 			}
 		}
 
@@ -84,14 +90,17 @@ func main() {
 			return
 		}
 		if finished.Winners != nil {
-			fmt.Println(finished.WinRole)
 			fmt.Println(finished.Winners)
 			break
 		}
 
-		// time.Sleep(100 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 
-		fmt.Println("Next turn")
+		turn++
+
+		fmt.Println("Next turn", turn)
 
 	}
+
+	fmt.Println(game1)
 }
