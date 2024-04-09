@@ -18,3 +18,5 @@
 # vendor/
 
 *.csv
+
+config.yaml
