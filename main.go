@@ -3,14 +3,21 @@ package main
 import (
 	"api"
 	"config"
+	"logger"
 	"words"
 )
 
 func main() {
 	if config.InitConfig() {
+		logger.InitLogger()
+		logger.WarningLogger.Println("No config file found, creating a new one, please fill it before restarting the application")
 		return
 	}
+	logger.InitLogger()
+
 	words.InitWords()
+
+	logger.InfoLogger.Println("Starting API")
 	api.InitApi()
 }
 
