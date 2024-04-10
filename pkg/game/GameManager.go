@@ -12,12 +12,16 @@ func (g *Game) InitGame(host Player) {
 	g.SelectWords()
 	g.AttributeRoles()
 	g.ChoosePlayerOrder()
+
+	UpdateGame(*g)
 }
 
 func (g *Game) SelectWords() {
 	selectedWords := words.GetRandomWords()
 	g.Data.NormalWord = selectedWords.NormalWord
 	g.Data.UndercoverWord = selectedWords.UndercoverWord
+
+	UpdateGame(*g)
 }
 
 func (g *Game) AttributeRoles() {
@@ -43,12 +47,16 @@ func (g *Game) AttributeRoles() {
 		player.Role = roles[i]
 		g.Players[i] = player
 	}
+
+	UpdateGame(*g)
 }
 
 func (g *Game) ChoosePlayerOrder() {
 	rand.Shuffle(len(g.Players), func(i, j int) {
 		g.Players[i], g.Players[j] = g.Players[j], g.Players[i]
 	})
+
+	UpdateGame(*g)
 }
 
 func (g *Game) PlayTurnDesc(player Player, wordGiven string) error {
@@ -87,6 +95,8 @@ func (g *Game) PlayTurnDiscuss(player Player) error {
 	g.GameState.DescriptionPhase = false
 	g.GameState.DiscussionPhase = false
 	g.GameState.EliminationPhase = true
+
+	UpdateGame(*g)
 
 	return nil
 }
@@ -136,6 +146,8 @@ func (g *Game) PlayTurnElim(player Player, votedPlayer Player) error {
 		g.PlaysVote = []PlaysVoteData{}
 	}
 
+	UpdateGame(*g)
+
 	return nil
 }
 
@@ -183,5 +195,8 @@ func (g *Game) IsGameFinished() (WinMessage, error) {
 		}
 		return WinMessage{WinRole: Normal, Winners: normals}, nil
 	}
+
+	UpdateGame(*g)
+
 	return WinMessage{}, nil
 }

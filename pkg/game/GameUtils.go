@@ -2,6 +2,8 @@ package game
 
 import (
 	"errors"
+	"logger"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -12,7 +14,16 @@ func (g *Game) AddPlayer(p Player) error {
 	if g.Started {
 		return errors.New(GameAlreadyStarted.Message)
 	}
+	for _, player := range g.Players {
+		if player.Uuid == p.Uuid {
+			return errors.New(PlayerAlreadyInGame.Message)
+		}
+	}
 	g.Players = append(g.Players, p)
+	if len(g.Players) == 1 {
+		g.Host = p
+	}
+	UpdateGame(*g)
 	return nil
 }
 
@@ -31,6 +42,7 @@ func (g *Game) CreateGame() {
 		NormalWord:     "",
 		UndercoverWord: "",
 	}
+	Games = append(Games, *g)
 }
 
 func (g *Game) StartGame() error {
@@ -59,6 +71,8 @@ func (g *Game) StartGame() error {
 	g.GameState.EliminationPhase = false
 	g.PlayerTurn = 0
 
+	UpdateGame(*g)
+
 	return nil
 }
 
@@ -85,14 +99,17 @@ func (g *Game) GetGameData() GameData {
 
 func (g *Game) SetGameData(data GameData) {
 	g.Data = data
+	UpdateGame(*g)
 }
 
 func (g *Game) SetGameState(state GameState) {
 	g.GameState = state
+	UpdateGame(*g)
 }
 
 func (g *Game) SetPlayers(players []Player) {
 	g.Players = players
+	UpdateGame(*g)
 }
 
 func (g *Game) SetPlayer(p Player) {
@@ -101,14 +118,22 @@ func (g *Game) SetPlayer(p Player) {
 			g.Players[i] = p
 		}
 	}
+	UpdateGame(*g)
 }
 
-func (g *Game) RemovePlayer(uuid string) {
+func (g *Game) RemovePlayer(uuid string) error {
+	var edited bool
 	for i, p := range g.Players {
 		if p.Uuid == uuid {
 			g.Players = append(g.Players[:i], g.Players[i+1:]...)
+			edited = true
 		}
 	}
+	if !edited {
+		return errors.New(PlayerNotFound.Message)
+	}
+	UpdateGame(*g)
+	return nil
 }
 
 func (g *Game) GetPlayerByRole(role Role) (Player, error) {
@@ -136,6 +161,7 @@ func (g *Game) SetPlayerByRole(role Role, p Player) {
 			g.Players[i] = p
 		}
 	}
+	UpdateGame(*g)
 }
 
 func (g *Game) SetNormalPlayers(players []Player) {
@@ -144,6 +170,7 @@ func (g *Game) SetNormalPlayers(players []Player) {
 			g.Players[i] = players[i]
 		}
 	}
+	UpdateGame(*g)
 }
 
 func (g *Game) GetNormalWord() string {
@@ -152,6 +179,7 @@ func (g *Game) GetNormalWord() string {
 
 func (g *Game) SetNormalWord(word string) {
 	g.Data.NormalWord = word
+	UpdateGame(*g)
 }
 
 func (g *Game) GetUndercoverWord() string {
@@ -160,9 +188,10 @@ func (g *Game) GetUndercoverWord() string {
 
 func (g *Game) SetUndercoverWord(word string) {
 	g.Data.UndercoverWord = word
+	UpdateGame(*g)
 }
 
-func (g *Game) NextGameState() {
+func (g *Game) SetNextGameState() {
 	if g.GameState.DescriptionPhase {
 		g.GameState.DescriptionPhase = false
 		g.GameState.DiscussionPhase = true
@@ -173,13 +202,14 @@ func (g *Game) NextGameState() {
 		g.GameState.EliminationPhase = false
 		g.GameState.DescriptionPhase = true
 	}
+	UpdateGame(*g)
 }
 
 func (g *Game) SetNextPlayerTurn() {
 	var validPlayer bool
 	for !validPlayer {
 		if g.PlayerTurn == len(g.GetAlivePlayers()) {
-			g.NextGameState()
+			g.SetNextGameState()
 			g.PlayerTurn = 0
 		}
 		if !g.Players[g.PlayerTurn].Eliminated {
@@ -187,6 +217,7 @@ func (g *Game) SetNextPlayerTurn() {
 		}
 		g.PlayerTurn++
 	}
+	UpdateGame(*g)
 }
 
 func (g *Game) GetNextPlayer() (Player, error) {
@@ -222,4 +253,15 @@ func GetGame(uuid string) (Game, error) {
 		}
 	}
 	return Game{}, errors.New(GameNotFound.Message)
+}
+
+func UpdateGame(game Game) {
+	for i, g := range Games {
+		if g.Uuid == game.Uuid {
+			game.LastUpdate = time.Now()
+			Games[i] = game
+			return
+		}
+	}
+	logger.ErrorLogger.Println(GameNotFound.Message)
 }
