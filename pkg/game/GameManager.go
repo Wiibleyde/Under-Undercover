@@ -67,6 +67,13 @@ func (g *Game) PlayTurnDesc(player Player, wordGiven string) error {
 		g.SetNextPlayerTurn()
 		return errors.New(PlayerEliminated.Message)
 	}
+	// If already played
+	for _, play := range g.PlaysDesc {
+		if play.Player.Uuid == player.Uuid {
+			g.SetNextPlayerTurn()
+			return errors.New(AlreadyPlayed.Message)
+		}
+	}
 	g.PlaysDesc = append(g.PlaysDesc, PlaysDescData{
 		Turn:      g.PlayerTurn,
 		Player:    player,

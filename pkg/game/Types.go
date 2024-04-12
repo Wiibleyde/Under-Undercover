@@ -26,12 +26,11 @@ type Game struct {
 }
 
 type Player struct {
-	Uuid   string `json:"uuid"`
-	Pseudo string `json:"pseudo"`
-	// Position   int    `json:"position"`
-	Role       Role `json:"role"`
-	Eliminated bool `json:"eliminated"`
-	Connected  bool `json:"connected"`
+	Uuid       string `json:"uuid"`
+	Pseudo     string `json:"pseudo"`
+	Role       Role   `json:"role"`
+	Eliminated bool   `json:"eliminated"`
+	Connected  bool   `json:"connected"`
 }
 
 type GameData struct {
@@ -79,6 +78,7 @@ var (
 	NoWinnersError      = GameError{Code: 13, Message: "Aucun gagnant trouvé"}
 	NoNextPlayer        = GameError{Code: 14, Message: "Aucun joueur suivant trouvé"}
 	PlayerAlreadyInGame = GameError{Code: 15, Message: "Le joueur est déjà dans la partie"}
+	AlreadyPlayed       = GameError{Code: 16, Message: "Le joueur a déjà joué"}
 )
 
 type WinMessage struct {

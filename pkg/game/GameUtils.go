@@ -246,6 +246,21 @@ func (g *Game) GetAlivePlayers() []Player {
 	return alivePlayers
 }
 
+func (g *Game) GetPlayerWord(player Player) string {
+	for _, p := range g.Players {
+		if p.Uuid == player.Uuid {
+			role := p.Role
+			if role == Normal {
+				return g.Data.NormalWord
+			}
+			if role == Undercover {
+				return g.Data.UndercoverWord
+			}
+		}
+	}
+	return ""
+}
+
 func GetGame(uuid string) (Game, error) {
 	for _, g := range Games {
 		if g.Uuid == uuid {
