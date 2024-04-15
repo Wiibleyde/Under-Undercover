@@ -101,6 +101,7 @@ func joinGameApi(c *fiber.Ctx) error {
 	var players []PlayerHidden
 	for _, player := range gameSelected.Players {
 		players = append(players, PlayerHidden{
+			Uuid:       player.Uuid,
 			Pseudo:     player.Pseudo,
 			Eliminated: player.Eliminated,
 			Connected:  player.Connected,
@@ -179,6 +180,7 @@ func leaveGameApi(c *fiber.Ctx) error {
 	var players []PlayerHidden
 	for _, player := range gameSelected.Players {
 		players = append(players, PlayerHidden{
+			Uuid:       player.Uuid,
 			Pseudo:     player.Pseudo,
 			Eliminated: player.Eliminated,
 			Connected:  player.Connected,
@@ -281,6 +283,7 @@ func startGameApi(c *fiber.Ctx) error {
 	var players []PlayerHidden
 	for _, player := range gameSelected.Players {
 		players = append(players, PlayerHidden{
+			Uuid:       player.Uuid,
 			Pseudo:     player.Pseudo,
 			Eliminated: player.Eliminated,
 			Connected:  player.Connected,
@@ -360,6 +363,7 @@ func getGameApi(c *fiber.Ctx) error {
 	var players []PlayerHidden
 	for _, player := range gameSelected.Players {
 		players = append(players, PlayerHidden{
+			Uuid:       player.Uuid,
 			Pseudo:     player.Pseudo,
 			Eliminated: player.Eliminated,
 			Connected:  player.Connected,

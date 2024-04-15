@@ -25,6 +25,8 @@ func InitApi() {
 	app.Get("/api/getGame", getGameApi)
 
 	app.Post("/api/playTurn/description", playTurnDescriptionApi)
+	app.Post("/api/playTurn/discussion", playTurnDiscussionApi)
+	app.Post("/api/playTurn/vote", playTurnVoteApi)
 
 	host := config.GetConfig().Webserver.Host
 	port := strconv.Itoa(config.GetConfig().Webserver.Port)

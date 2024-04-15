@@ -26,6 +26,7 @@ type ResponseGameData struct {
 }
 
 type PlayerHidden struct {
+	Uuid       string `json:"uuid"`
 	Pseudo     string `json:"pseudo"`
 	Eliminated bool   `json:"eliminated"`
 	Connected  bool   `json:"connected"`
