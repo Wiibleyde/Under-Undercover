@@ -3,6 +3,12 @@ class ErrorMessage:
         self.code = code
         self.message = message
 
+    def __dict__(self) -> dict:
+        return {
+            "code": self.code,
+            "message": self.message
+        }
+
 ERROR_MESSAGES = {
     "playerNotFound": ErrorMessage(1, "Joueur non trouvé"),
     "gameStarted": ErrorMessage(2, "Partie déjà commencée"),

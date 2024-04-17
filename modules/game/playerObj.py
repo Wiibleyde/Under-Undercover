@@ -1,7 +1,6 @@
 import uuid
-import json
 
-from role import Role
+from .roleObj import Role
 
 
 class Player:
@@ -11,6 +10,15 @@ class Player:
         self.role = role
         self.eliminated = eliminated
         self.connected = connected
+
+    def __dict__(self) -> dict:
+        return {
+            "uuid": self.uuid,
+            "pseudo": self.pseudo,
+            "role": self.role.__dict__() if self.role else None,
+            "eliminated": self.eliminated,
+            "connected": self.connected
+        }
 
     def setRole(self, role:Role):
         self.role = role

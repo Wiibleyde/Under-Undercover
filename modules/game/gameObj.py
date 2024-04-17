@@ -1,19 +1,31 @@
-from player import Player
-from role import Role, ROLES
+from .playerObj import Player
+from .roleObj import Role, ROLES
 from ..utils.csvUtil import getWord
 
 import uuid
 import time
 import random
+import json
 
 class GameData:
     def __init__(self, normalWord:str, undercoverWord:str):
         self.normalWord = normalWord
         self.undercoverWord = undercoverWord
 
+    def __dict__(self) -> dict:
+        return {
+            "normalWord": self.normalWord,
+            "undercoverWord": self.undercoverWord
+        }
+
 class GameState:
     def __init__(self, state:int):
         self.state = state
+
+    def __dict__(self) -> dict:
+        return {
+            "state": self.getState()
+        }
 
     def getState(self):
         if self.state == 0:
@@ -30,13 +42,38 @@ class DescPlayData:
         self.player = player
         self.word = word
 
+    def __dict__(self) -> dict:
+        return {
+            "player": self.player.__dict__(),
+            "word": self.word
+        }
+
 class VoteData:
     def __init__(self, player:Player, targetPlayer:Player):
         self.player = player
         self.targetPlayer = targetPlayer
 
+    def __dict__(self) -> dict:
+        return {
+            "player": self.player.__dict__(),
+            "targetPlayer": self.targetPlayer.__dict__()
+        }
+
 class Game:
-    def __init__(self, uuid:str=str(uuid.uuid4()), started:bool=False, ended:bool=False, host:Player=Player(), players:list[Player]=[], gameData:GameData=GameData("",""), gameState:GameState=GameState(-1), playerTurn:int=0, descPlayData:list[DescPlayData]=None, voteData:list[VoteData]=None, lastUpdate:int=time.time()):
+    def __init__(
+            self,
+            uuid:str=str(uuid.uuid4()),
+            started:bool=False,
+            ended:bool=False,
+            host:Player=Player(),
+            players:list[Player]=[],
+            gameData:GameData=GameData("",""),
+            gameState:GameState=GameState(-1),
+            playerTurn:int=0,
+            descPlayData:list[DescPlayData]=[],
+            voteData:list[VoteData]=[],
+            lastUpdate:int=time.time()
+        ):
         self.uuid = uuid
         self.started = started
         self.ended = ended
@@ -49,6 +86,24 @@ class Game:
         self.voteData = voteData
         self.lastUpdate = lastUpdate
 
+    def __str__(self) -> str:
+        return f"Game {self.uuid} - {self.started} - {self.ended} - {self.host} - {self.players} - {self.gameData} - {self.gameState} - {self.playerTurn} - {self.descPlayData} - {self.voteData} - {self.lastUpdate}"
+
+    def __dict__(self) -> dict:
+        return {
+            "uuid": self.uuid,
+            "started": self.started,
+            "ended": self.ended,
+            "host": self.host.__dict__(),
+            "players": [player.__dict__() for player in self.players],
+            "gameData": self.gameData.__dict__(),
+            "gameState": self.gameState.__dict__(),
+            "playerTurn": self.playerTurn,
+            "descPlayData": [descPlay.__dict__() for descPlay in self.descPlayData],
+            "voteData": [vote.__dict__() for vote in self.voteData],
+            "lastUpdate": self.lastUpdate
+        }
+
     def getPlayer(self, uuid:str) -> Player:
         for player in self.players:
             if player.uuid == uuid:
@@ -56,9 +111,11 @@ class Game:
         return None
 
     def addPlayer(self, player:Player) -> bool:
-        if not self.started:
+        if self.started:
+            print("Game already started")
             return False
         if player in self.players:
+            print("Player already in game")
             return False
         self.players.append(player)
         return True
