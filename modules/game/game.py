@@ -1,8 +1,10 @@
 from player import Player
 from role import Role, ROLES
+from ..utils.csvUtil import getWord
 
 import uuid
 import time
+import random
 
 class GameData:
     def __init__(self, normalWord:str, undercoverWord:str):
@@ -67,16 +69,38 @@ class Game:
         self.players.remove(player)
         return True
 
+    def defineAllRoles(self) -> bool:
+        specialRoles = []
+        if len(self.players) == 3:
+            specialRoles = [ROLES["Undercover"]]
+        elif len(self.players) <= 5:
+            specialRoles = [ROLES["Undercover"], ROLES["MrWhite"]]
+        else:
+            specialRoles = [ROLES["Undercover"], ROLES["Undercover"], ROLES["MrWhite"]]
+        roles = [ROLES["Normal"]] * (len(self.players) - len(specialRoles))
+        roles.extend(specialRoles)
+        random.shuffle(roles)
+        for player in self.players:
+            player.role = roles.pop(0)
+        return True
+
+    def chooseWords(self) -> bool:
+        if len(self.players) < 3:
+            return False
+        words = getWord()
+        self.gameData = GameData(words.normal, words.undercover)
+        return True
+
     def startGame(self) -> bool:
         if self.started:
             return False
         if len(self.players) < 3:
             return False
         if self.gameData.normalWord == "" or self.gameData.undercoverWord == "":
-            return False
+            self.chooseWords()
         for player in self.players:
             if player.role == None or player.role == ROLES["UnSet"]:
-                return False
+                self.defineAllRoles()
         self.started = True
         self.gameState = GameState(0)
         return True
