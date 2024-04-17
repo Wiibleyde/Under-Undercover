@@ -1,6 +1,7 @@
 from .playerObj import Player
 from .roleObj import Role, ROLES
 from ..utils.csvUtil import getWord
+from .errorMessageObj import ERROR_MESSAGES, ErrorMessage
 
 import uuid
 import time
@@ -110,19 +111,19 @@ class Game:
                 return player
         return None
 
-    def addPlayer(self, player:Player) -> bool:
+    def addPlayer(self, player:Player) -> ErrorMessage:
         if self.started:
-            return False
+            return ERROR_MESSAGES["GameAlreadyStarted"]
         if player in self.players:
-            return False
+            return ERROR_MESSAGES["PlayerAlreadyInGame"]
         self.players.append(player)
-        return True
+        return None
 
-    def removePlayer(self, player:Player) -> bool:
+    def removePlayer(self, player:Player) -> ErrorMessage:
         if player not in self.players:
-            return False
+            return ERROR_MESSAGES["PlayerNotInGame"]
         self.players.remove(player)
-        return True
+        return None
 
     def defineAllRoles(self) -> bool:
         specialRoles = []
@@ -139,18 +140,18 @@ class Game:
             player.role = roles.pop(0)
         return True
 
-    def chooseWords(self) -> bool:
+    def chooseWords(self) -> ErrorMessage:
         if len(self.players) < 3:
-            return False
+            return ERROR_MESSAGES["NotEnoughPlayers"]
         words = getWord()
         self.gameData = GameData(words.normal, words.undercover)
-        return True
+        return None
 
-    def startGame(self) -> bool:
+    def startGame(self) -> ErrorMessage:
         if self.started:
-            return False
+            return ERROR_MESSAGES["GameAlreadyStarted"]
         if len(self.players) < 3:
-            return False
+            return ERROR_MESSAGES["NotEnoughPlayers"]
         if self.gameData.normalWord == "" or self.gameData.undercoverWord == "":
             self.chooseWords()
         for player in self.players:
@@ -158,13 +159,13 @@ class Game:
                 self.defineAllRoles()
         self.started = True
         self.gameState = GameState(0)
-        return True
+        return None
 
-    def endGame(self) -> bool:
+    def endGame(self) -> ErrorMessage:
         if not self.started:
-            return False
+            return ERROR_MESSAGES["GameNotStarted"]
         self.ended = True
-        return True
+        return None
 
     def update(self) -> bool:
         self.lastUpdate = time.time()
@@ -202,23 +203,23 @@ class Game:
         else:
             return None
 
-    def playDesc(self, player:Player, word:str) -> bool:
+    def playDesc(self, player:Player, word:str) -> ErrorMessage:
         if self.gameState.getState() != "description":
-            return False
+            return ERROR_MESSAGES["NotRightState"]
         if player != self.getPlayerTurn():
-            return False
+            return ERROR_MESSAGES["NotYourTurn"]
         if self.descPlayData == None:
             self.descPlayData = []
         self.descPlayData.append(DescPlayData(player, word))
         if len(self.descPlayData) == len(self.players):
             self.nextGameState()
-        return True
+        return None
 
-    def playVote(self, player:Player, targetPlayer:Player) -> bool:
+    def playVote(self, player:Player, targetPlayer:Player) -> ErrorMessage:
         if self.gameState.getState() != "vote":
-            return False
+            return ERROR_MESSAGES["NotRightState"]
         if player != self.getPlayerTurn():
-            return False
+            return ERROR_MESSAGES["NotYourTurn"]
         if self.voteData == None:
             self.voteData = []
         self.voteData.append(VoteData(player, targetPlayer))
@@ -237,12 +238,12 @@ class Game:
                     maxPlayer = player
             maxPlayer.setEliminated(True)
             self.nextGameState()
-        return True
+        return None
 
-    def playDiscussion(self, player:Player) -> bool:
+    def playDiscussion(self, player:Player) -> ErrorMessage:
         if self.gameState.getState() != "discussion":
-            return False
+            return ERROR_MESSAGES["NotRightState"]
         if player != self.host:
-            return False
+            return ERROR_MESSAGES["HostOnly"]
         self.nextGameState()
-        return True
+        return None

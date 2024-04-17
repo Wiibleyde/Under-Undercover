@@ -35,21 +35,18 @@ def hideSensitiveDatas(game:gameObj.Game) -> gameObj.Game:
         newGame.players[index].role = roleObj.Role("etnoooon")
     return newGame
 
-@app.route("/")
-def index() -> str:
-    return "Hello, World!"
-
-@app.route("/status")
+@app.route("/", methods=["GET"])
+@app.route("/status", methods=["GET"])
 def status() -> str:
     return flask.jsonify({"status": "ok"})
 
-@app.route("/createGame")
+@app.route("/createGame", methods=["POST"])
 def createGame() -> str:
     newGame = gameObj.Game()
     games.append(newGame)
     return newGame.uuid
 
-@app.route("/getCurrentGame")
+@app.route("/getCurrentGame", methods=["GET"])
 def getCurrentGame() -> str:
     playerUuid = flask.request.cookies.get("playerUWUID")
     gameUuid = flask.request.cookies.get("gameUWUID")
@@ -61,7 +58,7 @@ def getCurrentGame() -> str:
             return flask.jsonify(hiddenGame.__dict__())
     return "No game found"
 
-@app.route("/joinGame")
+@app.route("/joinGame", methods=["POST"])
 def joinGame():
     gameId = flask.request.args.get("gameId")
     pseudo = flask.request.args.get("pseudo")
@@ -73,13 +70,29 @@ def joinGame():
     player = playerObj.Player(pseudo=pseudo)
     game = getGame(gameId)
     if game:
-        game.addPlayer(player)
+        errMessage = game.addPlayer(player)
+        if errMessage:
+            return errMessage.message
         if len(game.players) == 1:
             game.host = player
         resp = flask.make_response("Player joined")
         resp.set_cookie("playerUWUID", player.uuid, expires=datetime.datetime.now() + datetime.timedelta(hours=4))
         resp.set_cookie("gameUWUID", game.uuid, expires=datetime.datetime.now() + datetime.timedelta(hours=4))
         return resp
+    return "Game not found"
+
+@app.route("/startGame", methods=["POST"])
+def startGame():
+    playerUuid = flask.request.cookies.get("playerUWUID")
+    gameUuid = flask.request.cookies.get("gameUWUID")
+    game = getGame(gameUuid)
+    if game:
+        if game.host.uuid == playerUuid:
+            errMessage = game.startGame()
+            if errMessage is None:
+                return "Game started"
+            return errMessage.message
+        return "Player not host"
     return "Game not found"
 
 if __name__ == "__main__":

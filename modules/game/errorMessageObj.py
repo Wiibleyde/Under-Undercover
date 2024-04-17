@@ -10,14 +10,13 @@ class ErrorMessage:
         }
 
 ERROR_MESSAGES = {
-    "playerNotFound": ErrorMessage(1, "Joueur non trouvé"),
-    "gameStarted": ErrorMessage(2, "Partie déjà commencée"),
-    "alreadyInGame": ErrorMessage(3, "Joueur déjà dans la partie"),
-    "notEnoughPlayers": ErrorMessage(4, "Pas assez de joueurs"),
-    "notInitializedGame": ErrorMessage(5, "Partie non initialisée"),
-    "incorrectGameStatus": ErrorMessage(6, "Statut de la partie incorrect"),
-    "wrongActionStatus": ErrorMessage(7, "Action incorrecte (mauvais statut de la partie)"),
-    "notYourTurn": ErrorMessage(8, "Action incorrecte (pas votre tour)"),
-    "hostOnly": ErrorMessage(9, "Action incorrecte (seul l'hôte peut effectuer cette action)"),
+    "GameAlreadyStarted": ErrorMessage(1, "Partie déjà commencée"),
+    "PlayerAlreadyInGame": ErrorMessage(2, "Joueur déjà dans la partie"),
+    "PlayerNotInGame": ErrorMessage(3, "Joueur inexistant dans la partie"),
+    "NotEnoughPlayers": ErrorMessage(4, "Pas assez de joueurs"),
+    "GameNotStarted": ErrorMessage(5, "Partie non commencée"),
+    "NotRightState": ErrorMessage(6, "Pas le bon état de jeu"),
+    "NotYourTurn": ErrorMessage(7, "Pas votre tour"),
+    "HostOnly": ErrorMessage(8, "Seul l'hôte peut faire cette action"),
 }
 
