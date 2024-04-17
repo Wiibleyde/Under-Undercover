@@ -112,10 +112,8 @@ class Game:
 
     def addPlayer(self, player:Player) -> bool:
         if self.started:
-            print("Game already started")
             return False
         if player in self.players:
-            print("Player already in game")
             return False
         self.players.append(player)
         return True

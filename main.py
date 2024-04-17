@@ -47,8 +47,6 @@ def createGame() -> str:
 
 @app.route("/getCurrentGame")
 def getCurrentGame() -> str:
-    for game in games:
-        print(game.players)
     playerUuid = flask.request.cookies.get("playerUWUID")
     gameUuid = flask.request.cookies.get("gameUWUID")
     if playerUuid and gameUuid:
