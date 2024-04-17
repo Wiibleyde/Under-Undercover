@@ -2,6 +2,7 @@ from .playerObj import Player
 from .roleObj import Role, ROLES
 from ..utils.csvUtil import getWord
 from .errorMessageObj import ERROR_MESSAGES, ErrorMessage
+from .winMessageObj import WIN_MESSAGES, WinMessage
 
 import uuid
 import time
@@ -161,11 +162,11 @@ class Game:
         self.gameState = GameState(0)
         return None
 
-    def endGame(self) -> ErrorMessage:
-        if not self.started:
-            return ERROR_MESSAGES["GameNotStarted"]
+    def endGame(self, reason:WinMessage=None) -> ErrorMessage:
+        if self.ended:
+            return ERROR_MESSAGES["GameAlreadyEnded"]
         self.ended = True
-        return None
+        return reason if reason else None
 
     def update(self) -> bool:
         self.lastUpdate = time.time()
@@ -237,7 +238,11 @@ class Game:
                     maxVotes = votes
                     maxPlayer = player
             maxPlayer.setEliminated(True)
-            self.nextGameState()
+            isFinished = self.isGameFinished()
+            if isFinished:
+                self.endGame(isFinished)
+            else:
+                self.nextGameState()
         return None
 
     def playDiscussion(self, player:Player) -> ErrorMessage:
@@ -246,4 +251,25 @@ class Game:
         if player != self.host:
             return ERROR_MESSAGES["HostOnly"]
         self.nextGameState()
+        return None
+
+    def isGameFinished(self) -> WinMessage:
+        undercoverCount = 0
+        normalCount = 0
+        mrWhite = False
+        for player in self.players:
+            if player.eliminated:
+                continue
+            if player.role == ROLES["Undercover"]:
+                undercoverCount += 1
+            elif player.role == ROLES["Normal"]:
+                normalCount += 1
+            elif player.role == ROLES["MrWhite"]:
+                mrWhite = True
+        if normalCount > 0 and undercoverCount == 0 and not mrWhite:
+            return WIN_MESSAGES["NormalWin"]
+        if normalCount == 1 and undercoverCount > 0 and not mrWhite:
+            return WIN_MESSAGES["UndercoverWin"]
+        if mrWhite and not undercoverCount and not normalCount:
+            return WIN_MESSAGES["MrWhiteWin"]
         return None

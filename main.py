@@ -87,12 +87,57 @@ def startGame():
     gameUuid = flask.request.cookies.get("gameUWUID")
     game = getGame(gameUuid)
     if game:
-        if game.host.uuid == playerUuid:
-            errMessage = game.startGame()
+        errMessage = game.startGame()
+        if errMessage is None:
+            return "Game started"
+        return errMessage.message
+    return "Game not found"
+
+@app.route("/playDescTurn", methods=["POST"])
+def playDescTurn():
+    playerUuid = flask.request.cookies.get("playerUWUID")
+    gameUuid = flask.request.cookies.get("gameUWUID")
+    game = getGame(gameUuid)
+    if game:
+        player = getPlayerInGame(playerUuid, gameUuid)
+        if player:
+            desc = flask.request.args.get("desc")
+            errMessage = game.playDesc(player, desc)
             if errMessage is None:
-                return "Game started"
+                return "Description played"
             return errMessage.message
-        return "Player not host"
+        return "Player not found"
+    return "Game not found"
+
+@app.route("/playVoteTurn", methods=["POST"])
+def playVoteTurn():
+    playerUuid = flask.request.cookies.get("playerUWUID")
+    gameUuid = flask.request.cookies.get("gameUWUID")
+    game = getGame(gameUuid)
+    if game:
+        player = getPlayerInGame(playerUuid, gameUuid)
+        if player:
+            vote = flask.request.args.get("vote")
+            errMessage = game.playVote(player, vote)
+            if errMessage is None:
+                return "Vote played"
+            return errMessage.message
+        return "Player not found"
+    return "Game not found"
+
+@app.route("/playDiscussionTurn", methods=["POST"])
+def playDiscussionTurn():
+    playerUuid = flask.request.cookies.get("playerUWUID")
+    gameUuid = flask.request.cookies.get("gameUWUID")
+    game = getGame(gameUuid)
+    if game:
+        player = getPlayerInGame(playerUuid, gameUuid)
+        if player:
+            errMessage = game.playDiscussion(player)
+            if errMessage is None:
+                return "Discussion played"
+            return errMessage.message
+        return "Player not found"
     return "Game not found"
 
 if __name__ == "__main__":
