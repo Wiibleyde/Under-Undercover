@@ -39,6 +39,10 @@ def hideSensitiveDatas(game:gameObj.Game) -> gameObj.Game:
 def index() -> str:
     return "Hello, World!"
 
+@app.route("/status")
+def status() -> str:
+    return flask.jsonify({"status": "ok"})
+
 @app.route("/createGame")
 def createGame() -> str:
     newGame = gameObj.Game()
@@ -57,8 +61,10 @@ def getCurrentGame() -> str:
             return flask.jsonify(hiddenGame.__dict__())
     return "No game found"
 
-@app.route("/joinGame/<gameId>/<pseudo>")
-def joinGame(gameId:str, pseudo:str="Visitor"):
+@app.route("/joinGame")
+def joinGame():
+    gameId = flask.request.args.get("gameId")
+    pseudo = flask.request.args.get("pseudo")
     playerUuid = flask.request.cookies.get("playerUWUID")
     if playerUuid:
         player = getPlayer(playerUuid)
