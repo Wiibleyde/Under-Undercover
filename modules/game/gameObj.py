@@ -7,7 +7,6 @@ from .winMessageObj import WIN_MESSAGES, WinMessage
 import uuid
 import time
 import random
-import json
 
 class GameData:
     def __init__(self, normalWord:str, undercoverWord:str):
