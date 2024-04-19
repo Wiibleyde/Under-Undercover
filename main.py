@@ -2,9 +2,11 @@ from modules.utils import csvUtil
 from modules.game import gameObj, playerObj, roleObj
 
 import flask
+import secrets
 import datetime
 
 app = flask.Flask(__name__)
+app.secret_key = secrets.token_urlsafe(16)
 games: list[gameObj.Game] = []
 
 def getGame(gameId:str) -> gameObj.Game:
@@ -81,13 +83,30 @@ def joinGame():
         return resp
     return "Game not found"
 
+@app.route("/leaveGame", methods=["POST"])
+def leaveGame():
+    playerUuid = flask.request.cookies.get("playerUWUID")
+    gameUuid = flask.request.cookies.get("gameUWUID")
+    game = getGame(gameUuid)
+    if game:
+        player = getPlayerInGame(playerUuid, gameUuid)
+        if player:
+            errMessage = game.removePlayer(player)
+            if errMessage:
+                return errMessage.message
+            resp = flask.make_response("Player left")
+            resp.set_cookie("playerUWUID", "", expires=0)
+            return resp
+        return "Player not found"
+    return "Game not found"
+
 @app.route("/startGame", methods=["POST"])
 def startGame():
     playerUuid = flask.request.cookies.get("playerUWUID")
     gameUuid = flask.request.cookies.get("gameUWUID")
     game = getGame(gameUuid)
     if game:
-        errMessage = game.startGame()
+        errMessage = game.startGame(playerUuid)
         if errMessage is None:
             return "Game started"
         return errMessage.message
@@ -142,4 +161,4 @@ def playDiscussionTurn():
 
 if __name__ == "__main__":
     csvUtil.getWords()
-    app.run(debug=True)
+    app.run()

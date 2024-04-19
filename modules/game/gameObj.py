@@ -61,20 +61,7 @@ class VoteData:
         }
 
 class Game:
-    def __init__(
-            self,
-            uuid:str=str(uuid.uuid4()),
-            started:bool=False,
-            ended:bool=False,
-            host:Player=Player(),
-            players:list[Player]=[],
-            gameData:GameData=GameData("",""),
-            gameState:GameState=GameState(-1),
-            playerTurn:int=0,
-            descPlayData:list[DescPlayData]=[],
-            voteData:list[VoteData]=[],
-            lastUpdate:int=time.time()
-        ):
+    def __init__(self,uuid:str=str(uuid.uuid4()),started:bool=False,ended:bool=False,host:Player=Player(),players:list[Player]=[],gameData:GameData=GameData("",""),gameState:GameState=GameState(-1),playerTurn:int=0,descPlayData:list[DescPlayData]=[],voteData:list[VoteData]=[],lastUpdate:int=time.time()):
         self.uuid = uuid
         self.started = started
         self.ended = ended
@@ -147,9 +134,11 @@ class Game:
         self.gameData = GameData(words.normal, words.undercover)
         return None
 
-    def startGame(self) -> ErrorMessage:
+    def startGame(self, player:Player) -> ErrorMessage:
         if self.started:
             return ERROR_MESSAGES["GameAlreadyStarted"]
+        if player != self.host:
+            return ERROR_MESSAGES["HostOnly"]
         if len(self.players) < 3:
             return ERROR_MESSAGES["NotEnoughPlayers"]
         if self.gameData.normalWord == "" or self.gameData.undercoverWord == "":
