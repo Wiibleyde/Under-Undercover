@@ -2,11 +2,13 @@ from modules.utils import csvUtil
 from modules.game import gameObj, playerObj, roleObj
 
 import flask
+from flask_cors import CORS
 import secrets
 import datetime
 
 app = flask.Flask(__name__)
 app.secret_key = secrets.token_urlsafe(16)
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 games: list[gameObj.Game] = []
 
 def getGame(gameId:str) -> gameObj.Game:
