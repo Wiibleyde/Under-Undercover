@@ -4,7 +4,7 @@ from .roleObj import Role
 
 
 class Player:
-    def __init__(self, uuid:str=str(uuid.uuid4()), pseudo:str="Visitor", role:Role=None, eliminated:bool=False, connected:bool=True):
+    def __init__(self, uuid:str, pseudo:str="Visitor", role:Role=None, eliminated:bool=False, connected:bool=True):
         self.uuid = uuid
         self.pseudo = pseudo
         self.role = role

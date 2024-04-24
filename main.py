@@ -5,6 +5,7 @@ import flask
 from flask_cors import CORS
 import secrets
 import datetime
+import uuid
 
 app = flask.Flask(__name__)
 app.secret_key = secrets.token_urlsafe(16)
@@ -46,7 +47,7 @@ def status() -> str:
 
 @app.route("/createGame", methods=["POST"])
 def createGame() -> str:
-    newGame = gameObj.Game()
+    newGame = gameObj.Game(uuid=str(uuid.uuid4()))
     games.append(newGame)
     return newGame.uuid
 
@@ -71,7 +72,7 @@ def joinGame():
         player = getPlayer(playerUuid)
         if player:
             return "Player already in a game"
-    player = playerObj.Player(pseudo=pseudo)
+    player = playerObj.Player(uuid=str(uuid.uuid4()), pseudo=pseudo)
     game = getGame(gameId)
     if game:
         errMessage = game.addPlayer(player)
@@ -80,8 +81,8 @@ def joinGame():
         if len(game.players) == 1:
             game.host = player
         resp = flask.make_response("Player joined")
-        resp.set_cookie("playerUWUID", player.uuid, expires=datetime.datetime.now() + datetime.timedelta(hours=4))
-        resp.set_cookie("gameUWUID", game.uuid, expires=datetime.datetime.now() + datetime.timedelta(hours=4))
+        resp.set_cookie("playerUWUID", player.uuid, expires=datetime.datetime.now() + datetime.timedelta(hours=1))
+        resp.set_cookie("gameUWUID", game.uuid, expires=datetime.datetime.now() + datetime.timedelta(hours=1))
         return resp
     return "Game not found"
 
