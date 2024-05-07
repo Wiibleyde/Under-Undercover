@@ -1,5 +1,6 @@
 from modules.utils import csvUtil
 from modules.game import gameObj, playerObj, roleObj
+from modules.game.roleObj import ROLES
 
 import flask
 from flask_cors import CORS
@@ -62,6 +63,22 @@ def getCurrentGame() -> str:
             hiddenGame = hideSensitiveDatas(game)
             return flask.jsonify(hiddenGame.__dict__())
     return flask.jsonify({"error": "Player or game not found"})
+
+@app.route("/getPersonnalData", methods=["GET"])
+def getPersonnalData() -> str:
+    playerUuid = flask.request.cookies.get("playerUWUID")
+    gameUuid = flask.request.cookies.get("gameUWUID")
+    if playerUuid and gameUuid:
+        game = getGame(gameUuid)
+        player = getPlayerInGame(playerUuid, gameUuid)
+        if game and player:
+            if player.role is ROLES["Normal"]:
+                return flask.jsonify(game.gameData.normalWord)
+            elif player.role is ROLES["Undercover"]:
+                return flask.jsonify(game.gameData.undercoverWord)
+            elif player.role is ROLES["MrWhite"]:
+                return flask.jsonify({"info": "No word for Mr. White"})
+    return flask.jsonify({"error": "Player not found"})
 
 @app.route("/joinGame", methods=["POST"])
 def joinGame():
