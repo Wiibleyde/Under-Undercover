@@ -196,6 +196,7 @@ class Game:
         if self.gameState.getState() != "description":
             return ERROR_MESSAGES["NotRightState"]
         if player != self.getPlayerTurn():
+            print(self.getPlayerTurn())
             return ERROR_MESSAGES["NotYourTurn"]
         if self.descPlayData == None:
             self.descPlayData = []

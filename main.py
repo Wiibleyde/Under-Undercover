@@ -7,6 +7,7 @@ from flask_cors import CORS
 import secrets
 import datetime
 import uuid
+import copy
 
 app = flask.Flask(__name__)
 app.secret_key = secrets.token_urlsafe(16)
@@ -34,13 +35,6 @@ def getPlayerInGame(playerId:str, gameId:str) -> playerObj.Player:
                     return player
     return None
 
-def hideSensitiveDatas(game:gameObj.Game) -> gameObj.Game:
-    newGame = game
-    newGame.gameData = gameObj.GameData("nice", "try")
-    for index in range(len(newGame.players)):
-        newGame.players[index].role = roleObj.Role("etnoooon")
-    return newGame
-
 @app.route("/", methods=["GET"])
 @app.route("/status", methods=["GET"])
 def status() -> str:
@@ -60,25 +54,8 @@ def getCurrentGame() -> str:
         game = getGame(gameUuid)
         player = getPlayerInGame(playerUuid, gameUuid)
         if game and player:
-            hiddenGame = hideSensitiveDatas(game)
-            return flask.jsonify(hiddenGame.__dict__())
+            return flask.jsonify(game.__dict__())
     return flask.jsonify({"error": "Player or game not found"})
-
-@app.route("/getPersonnalData", methods=["GET"])
-def getPersonnalData() -> str:
-    playerUuid = flask.request.cookies.get("playerUWUID")
-    gameUuid = flask.request.cookies.get("gameUWUID")
-    if playerUuid and gameUuid:
-        game = getGame(gameUuid)
-        player = getPlayerInGame(playerUuid, gameUuid)
-        if game and player:
-            if player.role is ROLES["Normal"]:
-                return flask.jsonify(game.gameData.normalWord)
-            elif player.role is ROLES["Undercover"]:
-                return flask.jsonify(game.gameData.undercoverWord)
-            elif player.role is ROLES["MrWhite"]:
-                return flask.jsonify({"info": "No word for Mr. White"})
-    return flask.jsonify({"error": "Player not found"})
 
 @app.route("/joinGame", methods=["POST"])
 def joinGame():
