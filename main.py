@@ -7,7 +7,6 @@ from flask_cors import CORS
 import secrets
 import datetime
 import uuid
-import copy
 
 app = flask.Flask(__name__)
 app.secret_key = secrets.token_urlsafe(16)
